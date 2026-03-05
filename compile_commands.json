@@ -1067,6 +1067,33 @@
     "output": "user/mkdir.o"
   },
   {
+    "file": "user/pingpong.c",
+    "arguments": [
+      "riscv64-unknown-elf-gcc",
+      "-Wall",
+      "-Werror",
+      "-O",
+      "-fno-omit-frame-pointer",
+      "-ggdb",
+      "-DSOL_UTIL",
+      "-DLAB_UTIL",
+      "-MD",
+      "-mcmodel=medany",
+      "-ffreestanding",
+      "-fno-common",
+      "-mno-relax",
+      "-I.",
+      "-fno-stack-protector",
+      "-fno-pie",
+      "-c",
+      "-o",
+      "user/pingpong.o",
+      "user/pingpong.c"
+    ],
+    "directory": "/Users/nonmirror/Study/s081/xv6-labs-2021",
+    "output": "user/pingpong.o"
+  },
+  {
     "file": "user/rm.c",
     "arguments": [
       "riscv64-unknown-elf-gcc",
