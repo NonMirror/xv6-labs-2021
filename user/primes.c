@@ -1,34 +1,31 @@
 #include "kernel/types.h"
 #include "kernel/stat.h"
 #include "user/user.h"
-void primes(int *in);
 
-void primes(int* in) {
-  int p, n;
-  int r = read(in[0], &p, sizeof(p));
-  if (r != sizeof(p)) {
+void primes(int in[]) {
+  int prime, num;
+  if (read(in[0], &prime, sizeof(prime)) != sizeof(prime)) {
+    fprintf(1, "pid %d: EOF\n", getpid());
     close(in[0]);
-    fprintf(2, "pid %d: EOF\n", getpid());
     return;
   }
-  printf("prime %d\n", p);
+  printf("prime %d\n", prime);
 
-  int out[2];
-  pipe(out);
+  int out[2]; pipe(out);
+  
   if (fork() == 0) {
-    close(in[0]);
-    close(out[1]);
+    close(out[1]); close(in[0]);
     primes(out);
+    close(out[0]);
     exit(0);
   } else {
     close(out[0]);
-    while (read(in[0], &n, sizeof(n)) == sizeof(n)) {
-      if (n % p != 0) {
-        write(out[1], &n, sizeof(n));
+    while (read(in[0], &num, sizeof(num)) == sizeof(num)) {
+      if (num % prime != 0) {
+        write(out[1], &num, sizeof(num));
       }
     }
-    close(in[0]);
-    close(out[1]);
+    close(out[1]); close(in[0]);
     wait(0);
     exit(0);
   }
@@ -36,21 +33,21 @@ void primes(int* in) {
 
 int main() {
   int start = 2, end = 35;
-  int fd[2];
-  pipe(fd);
+  int p[2];
+  pipe(p);
 
   if (fork() == 0) {
-    close(fd[1]);
-    primes(fd);
+    close(p[1]);
+    primes(p);
+    close(p[0]);
+    exit(0);
   } else {
-    close(fd[0]);
-    for (int i = start; i <= end; ++i) {
-      write(fd[1], &i, sizeof(i));
+    close(p[0]);
+    for (int n = start; n <= end; ++n) {
+      write(p[1], &n, sizeof(n));
     }
-    close(fd[1]);
+    close(p[1]);
     wait(0);
     exit(0);
   }
-  return 0;
 }
-
