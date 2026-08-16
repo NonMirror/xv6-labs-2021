@@ -7,12 +7,12 @@
 int main(int argc, char *argv[]) {
   if (argc > MAXARG) {
     fprintf(2, "to many args\n");
+    exit(0);
   }
 
   int cmd_argc_by_xargs = argc - 1;
 
   char *cmd = argv[1];
-  *(cmd+sizeof(argv[1])) = '\0';
  
   char *cmd_argv[MAXARG];
   for (int i = 0; i < cmd_argc_by_xargs; ++i) {
@@ -28,25 +28,25 @@ int main(int argc, char *argv[]) {
         cmd_argv[cmd_argc_by_xargs + idx] = p_start;
         idx++;
         *(p_current-1) = '\0';
-        p_current++;
         p_start = p_current;
       }
       continue;
     }
-    if (idx == 0 && p_start != p_current) {
+    if (p_start != p_current-1) {
       cmd_argv[cmd_argc_by_xargs + idx] = p_start;
       idx++;
       *(p_current-1) = '\0';
-      p_current++;
-      p_start = p_current;
     }
     cmd_argv[cmd_argc_by_xargs + idx] = 0;
+
     if (fork() == 0) {
       exec(cmd, cmd_argv);
       exit(0);
     } else {
       wait(0);
       idx = 0;
+      p_current = buf;
+      p_start = buf;
     }
   }
   
