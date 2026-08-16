@@ -43,7 +43,9 @@ int main(int argc, char *argv[]) {
     cmd_argv[cmd_argc_by_xargs + idx] = 0;
     if (fork() == 0) {
       exec(cmd, cmd_argv);
+      exit(0);
     } else {
+      wait(0);
       idx = 0;
     }
   }
