@@ -7,6 +7,7 @@ _*
 *.asm
 *.sym
 *.img
+*.cache/
 vectors.S
 bootblock
 entryother
