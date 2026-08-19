@@ -83,6 +83,7 @@ argstr(int n, char *buf, int max)
   return fetchstr(addr, buf, max);
 }
 
+extern uint64 sys_trace(void);
 extern uint64 sys_chdir(void);
 extern uint64 sys_close(void);
 extern uint64 sys_dup(void);
@@ -106,6 +107,8 @@ extern uint64 sys_write(void);
 extern uint64 sys_uptime(void);
 
 static uint64 (*syscalls[])(void) = {
+[SYS_sysinfo]  sys_sysinfo,
+[SYS_trace]   sys_trace,
 [SYS_fork]    sys_fork,
 [SYS_exit]    sys_exit,
 [SYS_wait]    sys_wait,
@@ -135,7 +138,6 @@ syscall(void)
   int num;
   struct proc *p = myproc();
 
-  int should_trace = 0;
   char syscall_names[][15] = {"trace", "fork", "exit",
                               "wait", "pipe", "read",
                               "kill", "exec", "fstat",
@@ -146,19 +148,15 @@ syscall(void)
                               "close"};
 
   num = p->trapframe->a7;
-  if (p->mask >= 1 << num) {
-    should_trace = 1;
-  }
-  if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
+  if(num >= 0 && num < NELEM(syscalls) && syscalls[num]) {
     p->trapframe->a0 = syscalls[num]();
-    if (should_trace) {
-      printf("%d: syscall %s -> %ld\n", p->pid, syscall_names[p->trapframe->a7], p->trapframe->a0);
+    if (p->mask & (1 << num)) {
+      printf("%d: syscall %s -> %d\n", p->pid, syscall_names[num], p->trapframe->a0);
     }
   } else {
-    printf("%d %s: unknown sys call %d\n",
-            p->pid, p->name, num);
+    printf("%d %s: unknown sys call %d\n",  p->pid, p->name, num);
     p->trapframe->a0 = -1;
-    if (should_trace) {
+    if (p->mask & (1 << num)) {
       printf("-1\n");
     }
   }
