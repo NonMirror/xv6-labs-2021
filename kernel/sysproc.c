@@ -6,9 +6,20 @@
 #include "memlayout.h"
 #include "spinlock.h"
 #include "proc.h"
+#include "sysinfo.h"
 
 uint64 sys_sysinfo(void) {
+  struct sysinfo snapshot;
+  uint64 dst_sinfo;
+  if (argaddr(0, &dst_sinfo) < 0) {
+    return -1;
+  }
 
+  snapshot.freemem = count_freepage() * 4096;
+  snapshot.nproc = count_proc();
+  if (copyout(myproc()->pagetable, dst_sinfo, (char*)&snapshot, sizeof(snapshot)) < 0) {
+    return -1;
+  }
   return 0;
 }
 
