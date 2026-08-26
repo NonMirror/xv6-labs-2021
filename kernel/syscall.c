@@ -146,7 +146,7 @@ syscall(void)
                               "sbrk", "sleep", "uptime",
                               "open", "write", "mknod",
                               "unlink", "link", "mkdir",
-                              "close"};
+                              "close", "sysinfo"};
 
   num = p->trapframe->a7;
   if(num >= 0 && num < NELEM(syscalls) && syscalls[num]) {
