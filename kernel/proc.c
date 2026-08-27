@@ -127,6 +127,12 @@ found:
     return 0;
   }
 
+  if ((p->usyscall = (struct usyscall *)kalloc()) == 0) {
+    freeproc(p);
+    release(&p->lock);
+    return 0;
+  }
+
   // An empty user page table.
   p->pagetable = proc_pagetable(p);
   if(p->pagetable == 0 || p->usyscall == 0){
@@ -138,7 +144,7 @@ found:
   memset(p->usyscall, 0, PGSIZE);
   struct usyscall u;
   u.pid = p->pid;
-  *(p->usyscall) = (uint64)&u;
+  *(p->usyscall) = u;
 
   // Set up new context to start executing at forkret,
   // which returns to user space.
@@ -160,7 +166,6 @@ freeproc(struct proc *p)
   p->trapframe = 0;
   if(p->pagetable) {
     proc_freepagetable(p->pagetable, p->sz);
-    proc_freepagetable(p->usyscall, PGSIZE);
   }
   p->pagetable = 0;
   p->sz = 0;
@@ -220,6 +225,7 @@ proc_freepagetable(pagetable_t pagetable, uint64 sz)
 {
   uvmunmap(pagetable, TRAMPOLINE, 1, 0);
   uvmunmap(pagetable, TRAPFRAME, 1, 0);
+  uvmunmap(pagetable, USYSCALL, 1, 0);
   uvmfree(pagetable, sz);
 }
 
