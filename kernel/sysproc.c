@@ -81,6 +81,41 @@ int
 sys_pgaccess(void)
 {
   // lab pgtbl: your code here.
+  uint64 upage;
+  int pagenum;
+  uint64 buf;
+  uint64 abits = 0;
+  if (argaddr(0, &upage) < 0) {
+    return -1;
+  }
+  pagetable_t pagetable = myproc()->pagetable;
+  if (argint(1, &pagenum) < 0) {
+    return -1;
+  }
+  if (argaddr(2, &buf) < 0) {
+    return -1;
+  }
+
+  if (pagenum > 64 || pagenum < 0) {
+    printf("invalid pagenum\n");
+    return -1;
+  }
+
+  pte_t *pte;
+  for (uint64 i = 0; i < pagenum; ++i) {
+    pte = walk(pagetable, upage + i*PGSIZE, 0);
+    if (pte == 0 || (*pte & PTE_V) == 0) {
+      printf("invalid page\n");
+      return -1;
+    }
+    if ((*pte & PTE_A) == 0) {
+      continue;
+    }
+    abits |= (1L << i);
+    *pte &= ~PTE_A;  // clear the accessed bit
+  }
+
+  copyout(pagetable, buf, (char*)&abits, sizeof(abits));
   return 0;
 }
 #endif
