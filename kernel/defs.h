@@ -125,7 +125,8 @@ void            initsleeplock(struct sleeplock*, char*);
 
 // string.c
 int             memcmp(const void*, const void*, uint);
-void*           memmove(void*, const void*, uint);
+// memmove copies n bytes from src to dst and returns dst.
+void*           memmove(void *dst, const void *src, uint n);
 void*           memset(void*, int, uint);
 char*           safestrcpy(char*, const char*, int);
 int             strlen(const char*);

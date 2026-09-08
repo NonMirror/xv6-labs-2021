@@ -68,9 +68,11 @@ usertrap(void)
   } else if((which_dev = devintr()) != 0){
     // ok
     if (which_dev == 2) {
-      if (p->passed_ticks == p->ticks) {
-        p->passed_ticks = 0;
-        (p->handler)();
+      ++p->passed_ticks;
+      if (p->ticks > 0 && !p->alarm_active && p->passed_ticks >= p->ticks) {
+        p->alarm_active = 1;
+        memmove(p->alarm_trapframe, p->trapframe, sizeof(struct trapframe));
+        p->trapframe->epc = (uint64)p->handler;
       }
     }
   } else {

@@ -98,6 +98,10 @@ sys_uptime(void)
 }
 
 uint64 sys_sigreturn(void) {
+  struct proc *p = myproc();
+  p->passed_ticks = 0;
+  p->alarm_active = 0;
+  memmove(p->trapframe, p->alarm_trapframe, sizeof(struct trapframe));
   return 0;
 }
 
@@ -113,6 +117,7 @@ uint64 sys_sigalarm(void) {
 
   struct proc *p = myproc();
   p->ticks = ticks;
+  p->passed_ticks = 0;
   p->handler = handler;
   return 0;
 }
