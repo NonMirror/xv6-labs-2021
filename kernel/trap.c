@@ -50,7 +50,8 @@ usertrap(void)
   // save user program counter.
   p->trapframe->epc = r_sepc();
   
-  if(r_scause() == 8){
+  uint64 scause = r_scause();
+  if(scause == 8){
     // system call
 
     if(p->killed)
@@ -65,6 +66,18 @@ usertrap(void)
     intr_on();
 
     syscall();
+  } else if (scause == 15) {
+    uint64 fva = r_stval();
+    int flag = is_cow(p->pagetable, fva);
+    if (flag < 0) {
+      p->killed = 1;
+    } else if (flag == 0) {
+      panic("pgfualt: writable page triggers\n");
+    } else {
+      pte_t *pte = walk(p->pagetable, fva, 0);
+      if (cow_alloc(pte) == 0)
+        p->killed = 1;
+    }
   } else if((which_dev = devintr()) != 0){
     // ok
   } else {

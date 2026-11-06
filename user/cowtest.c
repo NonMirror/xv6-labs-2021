@@ -12,6 +12,7 @@
 void
 simpletest()
 {
+  printf("hi");
   uint64 phys_size = PHYSTOP - KERNBASE;
   int sz = (phys_size / 3) * 2;
 
@@ -181,6 +182,7 @@ int
 main(int argc, char *argv[])
 {
   simpletest();
+  printf("first simpletest passed\n");
 
   // check that the first simpletest() freed the physical memory.
   simpletest();
